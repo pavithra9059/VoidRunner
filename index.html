@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VOIDRUNNER — Drift the Collapse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ================= AMBIENT BACKDROP (global, behind everything) ================= -->
+<canvas id="bg-canvas"></canvas>
+<div class="grain"></div>
+
+<!-- ================= TOP NAV ================= -->
+<nav class="topnav" id="topnav">
+  <div class="nav-brand" data-nav="home">
+    <span class="brand-mark">◈</span>
+    <span class="brand-text">VOIDRUNNER</span>
+  </div>
+  <div class="nav-links">
+    <button class="nav-link" data-nav="home">Home</button>
+    <button class="nav-link" data-nav="play">Play</button>
+    <button class="nav-link" data-nav="characters">Pilots</button>
+    <button class="nav-link" data-nav="shop">Shop</button>
+    <button class="nav-link" data-nav="leaderboard">Ranks</button>
+    <button class="nav-link" data-nav="profile">Profile</button>
+    <button class="nav-link" data-nav="settings">Settings</button>
+  </div>
+  <div class="nav-currency">
+    <div class="currency-pill" title="Shards">
+      <span class="shard-icon">◆</span><span id="nav-shards">0</span>
+    </div>
+    <button class="nav-auth" id="nav-auth-btn">Sign In</button>
+  </div>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu">☰</button>
+</nav>
+
+<!-- mobile menu -->
+<div class="mobile-menu" id="mobile-menu">
+  <button class="nav-link" data-nav="home">Home</button>
+  <button class="nav-link" data-nav="play">Play</button>
+  <button class="nav-link" data-nav="characters">Pilots</button>
+  <button class="nav-link" data-nav="shop">Shop</button>
+  <button class="nav-link" data-nav="leaderboard">Ranks</button>
+  <button class="nav-link" data-nav="profile">Profile</button>
+  <button class="nav-link" data-nav="settings">Settings</button>
+</div>
+
+<!-- ================= APP ROOT — screens swap inside ================= -->
+<main id="app-root">
+
+  <!-- ---------- HOME SCREEN ---------- -->
+  <section class="screen" id="screen-home" data-screen="home">
+    <div class="hero">
+      <div class="hero-content">
+        <div class="eyebrow">SECTOR 7 // RIFT EVENT ACTIVE</div>
+        <h1 class="hero-title">VOID<span class="accent-text">RUNNER</span></h1>
+        <p class="hero-tagline">The tunnel is collapsing behind you. Ahead: shards, rifts, and a record that won't beat itself.</p>
+        <div class="hero-cta-row">
+          <button class="btn btn-primary btn-glow" data-nav="play">
+            <span>▶ Play Now</span>
+          </button>
+          <button class="btn btn-ghost" data-nav="characters">Choose Your Pilot</button>
+        </div>
+        <div class="hero-stats">
+          <div class="hstat"><span class="hstat-num" id="home-stat-best">0</span><span class="hstat-label">Best Score</span></div>
+          <div class="hstat"><span class="hstat-num" id="home-stat-runs">0</span><span class="hstat-label">Runs Logged</span></div>
+          <div class="hstat"><span class="hstat-num" id="home-stat-rank">—</span><span class="hstat-label">Global Rank</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-head">
+        <span class="section-eyebrow">THE STORY</span>
+        <h2>Sector 7 is folding in on itself</h2>
+      </div>
+      <p class="lede">A Rift tore through the mining colony's transit tunnels. The crystal seams are exposed, the structure is failing, and the only way out is forward — fast. You're a Runner: a pilot wired into a drift-ship, paid in Shards for every meter you survive and every seam you strip clean before the walls close.</p>
+    </div>
+
+    <div class="section-block">
+      <div class="section-head">
+        <span class="section-eyebrow">FEATURED PILOTS</span>
+        <h2>Pick your drift style</h2>
+      </div>
+      <div class="card-row" id="home-pilot-cards"></div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-head">
+        <span class="section-eyebrow">DAILY</span>
+        <h2>Today's contracts</h2>
+      </div>
+      <div class="card-row" id="home-missions"></div>
+    </div>
+  </section>
+
+  <!-- ---------- PLAY SCREEN ---------- -->
+  <section class="screen" id="screen-play" data-screen="play">
+    <div class="play-wrap">
+      <div class="hud-top">
+        <div class="hud-block">
+          <span class="hud-label">SCORE</span>
+          <span class="hud-value mono" id="hud-score">0</span>
+        </div>
+        <div class="hud-block">
+          <span class="hud-label">SHARDS</span>
+          <span class="hud-value mono" id="hud-shards">0</span>
+        </div>
+        <div class="hud-block hud-lives">
+          <span class="hud-label">HULL</span>
+          <span class="hud-hearts" id="hud-hearts">♥♥♥</span>
+        </div>
+        <div class="hud-block">
+          <span class="hud-label">DEPTH</span>
+          <span class="hud-value mono" id="hud-level">1</span>
+        </div>
+        <div class="hud-block hud-timer">
+          <span class="hud-label">TIME</span>
+          <span class="hud-value mono" id="hud-time">00:00</span>
+        </div>
+      </div>
+
+      <div class="game-stage">
+        <canvas id="game-canvas"></canvas>
+
+        <div class="progress-rail">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div class="overlay-panel" id="overlay-start">
+          <div class="glass-card overlay-card">
+            <h2>Ready to drop in?</h2>
+            <p>Arrow keys / A·D or swipe to steer. Space / tap to boost. Collect <span class="c-shard">◆ shards</span>, <span class="c-key">⬡ keys</span> and <span class="c-core">✦ cores</span>. Avoid the rift walls.</p>
+            <button class="btn btn-primary btn-glow" id="btn-start-run">▶ Start Run</button>
+            <div class="pilot-pick-row" id="play-pilot-row"></div>
+          </div>
+        </div>
+
+        <div class="overlay-panel hidden" id="overlay-pause">
+          <div class="glass-card overlay-card">
+            <h2>Paused</h2>
+            <button class="btn btn-primary" id="btn-resume">Resume</button>
+            <button class="btn btn-ghost" id="btn-quit">Quit to Menu</button>
+          </div>
+        </div>
+
+        <div class="overlay-panel hidden" id="overlay-gameover">
+          <div class="glass-card overlay-card">
+            <h2 id="gameover-title">Hull Breached</h2>
+            <div class="result-grid">
+              <div><span class="result-label">Score</span><span class="result-val mono" id="result-score">0</span></div>
+              <div><span class="result-label">Shards Earned</span><span class="result-val mono" id="result-shards">0</span></div>
+              <div><span class="result-label">Depth Reached</span><span class="result-val mono" id="result-level">1</span></div>
+              <div><span class="result-label">Best Score</span><span class="result-val mono" id="result-best">0</span></div>
+            </div>
+            <div id="new-best-banner" class="new-best hidden">★ NEW BEST SCORE ★</div>
+            <button class="btn btn-primary btn-glow" id="btn-retry">↻ Run Again</button>
+            <button class="btn btn-ghost" data-nav="home">Back to Base</button>
+          </div>
+        </div>
+
+        <button class="icon-btn stage-pause" id="btn-pause" title="Pause">❚❚</button>
+      </div>
+
+      <div class="mobile-controls" id="mobile-controls">
+        <button class="touch-btn" id="touch-left">◀</button>
+        <button class="touch-btn" id="touch-boost">▲ BOOST</button>
+        <button class="touch-btn" id="touch-right">▶</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- CHARACTERS SCREEN ---------- -->
+  <section class="screen" id="screen-characters" data-screen="characters">
+    <div class="section-head centered">
+      <span class="section-eyebrow">ROSTER</span>
+      <h2>Choose your pilot</h2>
+      <p class="lede">Each pilot drifts differently. Unlock new ones with Shards earned in runs.</p>
+    </div>
+    <div class="pilot-grid" id="pilot-grid"></div>
+  </section>
+
+  <!-- ---------- SHOP SCREEN ---------- -->
+  <section class="screen" id="screen-shop" data-screen="shop">
+    <div class="section-head centered">
+      <span class="section-eyebrow">BLACK MARKET</span>
+      <h2>Spend your shards</h2>
+      <p class="lede">Skins, hulls, and boosts. Everything purchased here is yours forever.</p>
+    </div>
+    <div class="shop-tabs">
+      <button class="shop-tab active" data-shoptab="skins">Ship Skins</button>
+      <button class="shop-tab" data-shoptab="boosts">Power-Ups</button>
+      <button class="shop-tab" data-shoptab="trails">Trail FX</button>
+    </div>
+    <div class="shop-grid" id="shop-grid"></div>
+
+    <div class="section-head centered" style="margin-top:64px">
+      <span class="section-eyebrow">LOADOUT</span>
+      <h2>Your inventory</h2>
+    </div>
+    <div class="inventory-row" id="inventory-row"></div>
+  </section>
+
+  <!-- ---------- LEADERBOARD SCREEN ---------- -->
+  <section class="screen" id="screen-leaderboard" data-screen="leaderboard">
+    <div class="section-head centered">
+      <span class="section-eyebrow">SECTOR 7 RANKINGS</span>
+      <h2>Top Runners</h2>
+    </div>
+    <div class="leaderboard-wrap">
+      <div class="glass-card podium" id="podium"></div>
+      <div class="glass-card lb-table-wrap">
+        <table class="lb-table" id="lb-table">
+          <thead><tr><th>#</th><th>Runner</th><th>Score</th><th>Depth</th><th>Pilot</th></tr></thead>
+          <tbody id="lb-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-head centered" style="margin-top:64px">
+      <span class="section-eyebrow">ACHIEVEMENTS</span>
+      <h2>Badges earned</h2>
+    </div>
+    <div class="badge-grid" id="badge-grid"></div>
+  </section>
+
+  <!-- ---------- PROFILE SCREEN ---------- -->
+  <section class="screen" id="screen-profile" data-screen="profile">
+    <div class="profile-header glass-card">
+      <div class="avatar-wrap">
+        <div class="avatar-ring">
+          <span class="avatar-emoji" id="profile-avatar">🛸</span>
+        </div>
+        <button class="btn btn-ghost btn-small" id="btn-change-avatar">Change Avatar</button>
+      </div>
+      <div class="profile-info">
+        <input type="text" id="profile-name-input" class="profile-name-input" maxlength="16" value="Runner">
+        <div class="profile-sub" id="profile-pilot-label">Pilot: Wraith</div>
+        <div class="profile-stat-strip">
+          <div><span class="mono" id="pstat-best">0</span><label>Best Score</label></div>
+          <div><span class="mono" id="pstat-total">0</span><label>Total Shards</label></div>
+          <div><span class="mono" id="pstat-runs">0</span><label>Runs</label></div>
+          <div><span class="mono" id="pstat-time">0m</span><label>Time Played</label></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head" style="margin-top:48px">
+      <span class="section-eyebrow">HISTORY</span>
+      <h2>Recent runs</h2>
+    </div>
+    <div class="glass-card lb-table-wrap">
+      <table class="lb-table" id="history-table">
+        <thead><tr><th>Date</th><th>Score</th><th>Depth</th><th>Shards</th><th>Result</th></tr></thead>
+        <tbody id="history-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="section-head" style="margin-top:48px">
+      <span class="section-eyebrow">COLLECTION</span>
+      <h2>Rewards collected</h2>
+    </div>
+    <div class="badge-grid" id="profile-badges"></div>
+  </section>
+
+  <!-- ---------- SETTINGS SCREEN ---------- -->
+  <section class="screen" id="screen-settings" data-screen="settings">
+    <div class="section-head centered">
+      <span class="section-eyebrow">CONTROL DECK</span>
+      <h2>Settings</h2>
+    </div>
+    <div class="settings-grid">
+      <div class="glass-card settings-card">
+        <h3>Audio</h3>
+        <div class="setting-row">
+          <label>Music Volume</label>
+          <input type="range" id="set-music-vol" min="0" max="100" value="60">
+        </div>
+        <div class="setting-row">
+          <label>SFX Volume</label>
+          <input type="range" id="set-sfx-vol" min="0" max="100" value="80">
+        </div>
+        <div class="setting-row toggle-row">
+          <label>Mute All</label>
+          <button class="toggle" id="set-mute" data-on="false"><span class="toggle-knob"></span></button>
+        </div>
+      </div>
+
+      <div class="glass-card settings-card">
+        <h3>Difficulty</h3>
+        <div class="diff-row" id="diff-row">
+          <button class="diff-btn" data-diff="easy">Easy</button>
+          <button class="diff-btn" data-diff="normal">Normal</button>
+          <button class="diff-btn" data-diff="hard">Hard</button>
+          <button class="diff-btn" data-diff="void">Void</button>
+        </div>
+        <p class="setting-note">Higher difficulty = faster collapse, more rifts, bigger shard payouts.</p>
+      </div>
+
+      <div class="glass-card settings-card">
+        <h3>Theme</h3>
+        <div class="theme-row" id="theme-row">
+          <button class="theme-swatch" data-theme="cyan" style="--sw:#7df9ff"></button>
+          <button class="theme-swatch" data-theme="magenta" style="--sw:#ff2d95"></button>
+          <button class="theme-swatch" data-theme="violet" style="--sw:#9d4eff"></button>
+          <button class="theme-swatch" data-theme="gold" style="--sw:#ffd23f"></button>
+          <button class="theme-swatch" data-theme="green" style="--sw:#3dffa0"></button>
+        </div>
+      </div>
+
+      <div class="glass-card settings-card">
+        <h3>Data</h3>
+        <p class="setting-note">Your progress is saved automatically to this browser.</p>
+        <button class="btn btn-ghost btn-small" id="btn-export-save">Export Save</button>
+        <button class="btn btn-danger btn-small" id="btn-reset-save">Reset All Progress</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= AUTH MODAL ================= -->
+<div class="modal-backdrop hidden" id="auth-modal">
+  <div class="glass-card modal-card">
+    <button class="modal-close" id="auth-close">✕</button>
+    <h2 id="auth-title">Sign In</h2>
+    <p class="setting-note">Local profile only — no data leaves your browser.</p>
+    <input type="text" id="auth-username" class="profile-name-input" placeholder="Callsign" maxlength="16">
+    <button class="btn btn-primary btn-glow" id="auth-submit" style="margin-top:16px;width:100%">Enter Sector 7</button>
+  </div>
+</div>
+
+<!-- ================= TOAST CONTAINER ================= -->
+<div id="toast-container"></div>
+
+<!-- ================= EASTER EGG MODAL ================= -->
+<div class="modal-backdrop hidden" id="egg-modal">
+  <div class="glass-card modal-card egg-card">
+    <button class="modal-close" id="egg-close">✕</button>
+    <div class="egg-glyph">◈◇◈</div>
+    <h2>You found a Rift Echo</h2>
+    <p class="setting-note">A hidden signal from a previous Runner. Take 500 bonus shards for your curiosity.</p>
+    <button class="btn btn-primary btn-glow" id="egg-claim">Claim Shards</button>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="bgcanvas.js"></script>
+<script src="game.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
